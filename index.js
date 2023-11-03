@@ -47,7 +47,27 @@ app.get('/cart', async (req,res) => {
     res.send(result)
 })
 
+app.get('/cart/:email', async (req, res) => {
+  const email = req.params.email;
+  const result = await cartCollection.find({ email: email }).toArray();
+  res.send(result);
+});
 
+app.get('/cart/:email/:id', async (req, res) => {
+  const email = req.params.email;
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id), email: email };
+  const result = await cartCollection.findOne(query);
+  res.send(result);
+});
+
+app.delete('/cart/:email/:id', async (req, res) => {
+  const email = req.params.email;
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id), email: email };
+  const result = await cartCollection.deleteOne(query);
+  res.send(result);
+});
 
 app.get('/', (req, res) => {
   res.send('Wellcome To Event Crafter Server')
