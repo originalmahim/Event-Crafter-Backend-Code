@@ -22,6 +22,7 @@ const client = new MongoClient(uri, {
 });
 
 const services = client.db('eventFile').collection('eventCollection')
+const cartCollection = client.db('booFile').collection('booCollection')
 
 app.get('/services' , async(req,res) => {
     const result = await services.find().toArray()
@@ -34,6 +35,19 @@ app.get('/services/:id' , async(req,res) => {
    const result = await services.findOne(qurary);
    res.send(result)
 } )
+
+app.post('/cart', async(req,res) => {
+    const cart = req.body;
+    const result = await cartCollection.insertOne(cart)
+    res.send(result)
+})
+
+app.get('/cart', async (req,res) => {
+    const result = await cartCollection.find().toArray()
+    res.send(result)
+})
+
+
 
 app.get('/', (req, res) => {
   res.send('Wellcome To Event Crafter Server')
