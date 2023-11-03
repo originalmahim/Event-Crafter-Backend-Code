@@ -14,7 +14,33 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
-
+// jwt middleware
+// const verifyToken = (req,res,next) => {
+//   const token = req?.cookies?.token;
+//   if (!token) {
+//     return res.status(401).send({massage: 'unothorized access'})
+//   }
+//   jwt.verify(token, process.env.TOKEN_SECRATE, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).send({massage: 'unothorized access'})
+//     }
+//     req.user = decoded
+//     next()
+//   })
+// }
+const verifyToken = (req,res,next) => {
+  const token = req?.cookies?.token;
+  if (!token) {
+    return res.status(401).send({massage: 'unauthorized access'})
+  }
+  jwt.verify(token,process.env.TOKEN_SECRATE,(err, decoded) => {
+    if (err) {
+      return res.status(401).send({massage: 'unauthorized access'})
+    }
+    req.user = decoded
+    next()
+  })
+}
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -62,12 +88,17 @@ app.post('/cart', async(req,res) => {
     res.send(result)
 })
 
-app.get('/cart', async (req,res) => {
+app.get('/cart', verifyToken , async (req,res) => {
     const result = await cartCollection.find().toArray()
     res.send(result)
 })
 
-app.get('/cart/:email', async (req, res) => {
+app.get('/cart/:email', verifyToken , async (req, res) => {
+
+  if (req.user.email !== req.params.email) {
+    return res.status(403).send({massage : 'forbidden access'})
+  }
+
   const email = req.params.email;
   const result = await cartCollection.find({ email: email }).toArray();
   res.send(result);
